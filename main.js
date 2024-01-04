@@ -1,214 +1,290 @@
-// Each little piece of functionality should be able to fit in the game, player or gameboard objects.
+// Information on Player and Computer Objects
+const Player = (choice='') => {
 
-// Player Object (we'll have many instances of it)
-function Player(nameInput) {
-    let score = 0; 
-    let name = nameInput; 
-    
-    return {
-        getName() {
-            return name; 
-        },
-        setName(newName) {
-            name = newName; 
-        },
-        getScore() {
-            return score; 
-        },
-        incrementScore() {
-            score++; 
-        }
+    let _score = 0;
+    let _name = '';
+    let _choice = choice;
+
+    const getScore = () => {
+        return _score;
     };
-}
+    const setScore = (score) => {
+        _score = score; 
+    };
 
-// IIFEE (module pattern) of a Gameboard
-const gameboard = () => {
+    const getName = () => {
+        return _name; 
+    };
+    const setName = (name) => {
+        _name = name; 
+    };
 
-    let gameArray = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
+    const getChoice = () => {
+        return _choice; 
+    };
+    const setChoice = (choice) => {
+        _choice = choice;
+    };
 
-    const setArray = (line, column, char) => {
-        gameArray[line * 3 + column] = char; 
+    return {
+        getScore, 
+        setScore,
+        getName,
+        setName,
+        getChoice, 
+        setChoice
+    };
+};
+
+// Where the GameBoard is managed
+const gameInfo = (() => {
+    let _gameArray = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
+    let _round = 0;
+
+    const user = Player("X");
+    const bot = Player("O");
+
+    const allPieces = document.querySelectorAll(".item");
+    const main = document.querySelector("main");
+    // Scores
+    const roundText = document.getElementById("round");
+    const playerScoreText = document.getElementById("player");
+    const computerScoreText = document.getElementById("computer");
+    // <--
+
+    const getRound = () => {
+        return _round;
+    };
+    const setRound = (round) => {
+        _round = round;
+    };
+
+    const getUser = () => {
+        return user;
+    };
+    const getBot = () => {
+        return bot;
     };
 
     const getArray = () => {
-        return gameArray;
+        return _gameArray; 
     };
-    
-    const verifyArray = () => { 
+    const setArray = (pos, char) => {
+        _gameArray[pos] = char;
+    };
+
+    const changeUserChoice = (() => {
+        const choiceButtons = document.querySelectorAll("#heroes button");
+        Array.from(choiceButtons).forEach((button) => {
+            button.addEventListener("click", (e) => {
+                Array.from(choiceButtons).forEach((b) => {b.style.setProperty("border-color", "grey")});
+                e.target.style.setProperty("border-color", "cornflowerblue");
+                if (e.target.id === "X") {
+                    user.setChoice("X"); 
+                    bot.setChoice("O");
+                } else {
+                    user.setChoice("O");
+                    bot.setChoice("X");
+                }
+                resetBoard(allPieces);
+            });
+        });
+    })();
+
+    const resetButton = (() => {
+        // Yeah, not the first time we initialize this one. 
+        const allPieces = document.querySelectorAll(".item");
+        // <-- 
+        const restartButton = document.getElementById("restart");
+        restartButton.addEventListener("click", () => {
+            resetBoard(allPieces);
+            roundText.textContent = 0;
+            playerScoreText.textContent = 0;
+            computerScoreText.textContent = 0;
+        });
+    })();
+
+    const setPieceListeners = (() => {
+        let allowedToClick = true;
+        Array.from(allPieces).forEach((item) => {
+            item.addEventListener("click", (e) => {
+                if (allowedToClick) {
+                    if (isPositionAvailable(e.target)) {
+                        displayPiece(e.target);
+                        if (searchForWinner()) {
+                            // Update Scores
+                            roundText.textContent = getRound();
+                            playerScoreText.textContent = user.getScore();
+                            // Reset Board
+                            allowedToClick = false;
+                            setTimeout(() => {
+                                resetBoard(allPieces);
+                                allowedToClick = true;
+                                return true; 
+                            }, 1500);
+                        } else {
+                            turnToComputer(0); 
+                            if (searchForWinner()) {
+                                // Update Scores
+                                roundText.textContent = getRound();
+                                computerScoreText.textContent = bot.getScore();
+                                // Reset Board
+                                allowedToClick = false;
+                                setTimeout(() => {
+                                    resetBoard(allPieces);
+                                    allowedToClick = true;
+                                    return true; 
+                                }, 1500);
+                            }
+                        }
+                    }
+                }
+            });
+        });  
+    })();
+
+    const displayWinner = ((winner) => {
+        const msg = document.createElement("div")
+        if (winner !== null) {
+            if (winner.getChoice() === user.getChoice()) {
+                msg.setAttribute("class", "msg"); 
+                msg.style.color = "green";
+                msg.textContent = "Player +1"; 
+            } else if (winner.getChoice() === bot.getChoice()) {
+                msg.setAttribute("class", "msg"); 
+                msg.style.color = "red";
+                msg.textContent = "Computer +1";
+            }
+        } else {
+            msg.setAttribute("class", "msg"); 
+            msg.style.color = "yellow";
+            msg.textContent = "It's a Draw!";
+        }
+        main.appendChild(msg); 
+        setTimeout(() => {
+            main.removeChild(msg);
+        }, 2000);
+    }); 
+
+    const turnToComputer = ((difficultyLevel) => {
+        let pos = null; 
+        let isPosInvalid = true;
+
+        // Difficulty affects how the computer chooses a position.  
+        if (difficultyLevel === 0) {
+            // Just a random number. 
+            do {
+                pos = Math.floor(Math.random() * 9);
+                if (getArray()[pos] != "X" && getArray()[pos] != "O") {
+                    isPosInvalid = false;
+                } else {
+                    isPosInvalid = true;
+                }
+            } while (isPosInvalid); 
+        } else if (difficultyLevel === 1) {
+            // The computer aims to win the match.
+
+        } else if (difficultyLevel === 3) {
+            // The computer not only aims to win the match, but he will also stop you from winning. 
+
+        }
+
+        // Sets within the array
+        setArray(pos, bot.getChoice());
+        
+        // Displays the text within the grid
+        targetPiece = document.getElementById(`item${pos}`);
+        if (bot.getChoice() === 'X') {
+            targetPiece.textContent = "X";
+        } else if (bot.getChoice() === 'O') {
+            targetPiece.textContent = "O";
+        }
+    }); 
+
+    const displayPiece = (targetPiece) => {
+        if (user.getChoice() === 'X') {
+            targetPiece.textContent = "X";
+        } else if (user.getChoice() === 'O') {
+            targetPiece.textContent = "O";
+        } else {
+            // Game has not started yet.
+            targetPiece.textContent = "Z";
+        }
+    };
+
+    const isPositionAvailable = (targetPiece) => {
+        const pos = parseInt((targetPiece.id.split(""))[4]);
+        if (getArray()[pos] != "X" && getArray()[pos] != "O") {
+            setArray(pos, user.getChoice());
+            return true;
+        } 
+        return false; 
+    };
+
+    const searchForWinner = () => {
+        let winner = '';
         // In search of a line match
         for (let i = 0; i < 9; i += 3) {
-            if (getArray()[i] === getArray()[i + 1] && getArray()[i + 1] === getArray()[i + 2]) {
-                return getArray()[i];
-            } 
+            if (getArray()[i] === getArray()[i + 1] && getArray()[i + 1] === getArray()[i + 2])
+                winner = getArray()[i];
         }
         // In search of a column match
         for (let j = 0; j < 3; j++) {
-            if (getArray()[j] === getArray()[j + 3] && getArray()[j + 3] === getArray()[j + 6]) {
-                return getArray()[j]; 
-            } 
+            if (getArray()[j] === getArray()[j + 3] && getArray()[j + 3] === getArray()[j + 6])
+                winner = getArray()[j]; 
         }
         // In search of a diagonal match 
-        if (getArray()[0] === getArray()[4] && getArray()[4] === getArray()[8]) {
-            return getArray()[0]; 
-        }
-        if (getArray()[6] === getArray()[4] && getArray()[4] === getArray()[2]) {
-            return getArray()[6];
-        }
-        // else 
-        return 'null'; 
-    }
+        if (getArray()[0] === getArray()[4] && getArray()[4] === getArray()[8])
+            winner = getArray()[0]; 
+        if (getArray()[6] === getArray()[4] && getArray()[4] === getArray()[2])
+            winner = getArray()[6];
 
-    const displayArray = () => {
-        let grid = '';
-        for (let i = 0; i < 3; i++) {
-            for (let j = 0; j < 3; j++) {
-                grid += `${getArray()[i * 3 + j]} `;
+        // Then
+        if (winner === user.getChoice()) {
+            user.setScore(user.getScore() + 1);
+            setRound(getRound() + 1);
+            displayWinner(user);
+            return true
+        } else if (winner === bot.getChoice()) {
+            bot.setScore(bot.getScore() + 1);
+            setRound(getRound() + 1);
+            displayWinner(bot); 
+            return true
+        } else {
+            // Was it a draw? 
+            let alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
+            if (!getArray().some(element => alphabet.includes(element))) {
+                setRound(getRound() + 1);
+                displayWinner(null); 
+                return true;
             }
-            grid += '\n'; 
         }
-        console.log(grid);
-    }
-
-    const playRoundUser = () => {
-        // User turn
-        let numbers = '';
-        let firstNumber = -1, secondNumber = -1;
-        let isPosInvalid = true; 
-        do {
-            numbers = prompt("Choose a position [{Line (0-2)} {Column (0-2)}]: ").split(" ");
-            firstNumber = parseInt(numbers[0]);
-            secondNumber = parseInt(numbers[1]);
-            if (firstNumber < 0 || firstNumber > 2 || secondNumber < 0 || secondNumber > 2) {
-                alert("Invalid position within the 3x3 grid. Please, try again.");
-                isPosInvalid = true; 
-            } else if (getArray()[firstNumber * 3 + secondNumber] === 'X' || getArray()[firstNumber * 3 + secondNumber] === 'O') {
-                alert("Position unavailable. Please, try again.");
-                isPosInvalid = true;
-            } else {
-                isPosInvalid = false; 
-            }
-        } while (isPosInvalid); 
-        return [firstNumber, secondNumber];
-    }
-
-    const playRoundComputer = () => {
-        // Computer turn
-        let computerLinePos;
-        let computerColumnPos;
-        let isPosInvalid = false;
-        do {
-            computerLinePos = Math.floor(Math.random() * 3);
-            computerColumnPos = Math.floor(Math.random() * 3);
-            if (getArray()[computerLinePos * 3 + computerColumnPos] === 'X' || getArray()[computerLinePos * 3 + computerColumnPos] === 'O')
-                isPosInvalid = true;
-            else 
-                isPosInvalid = false; 
-        } while (isPosInvalid);
-        return [computerLinePos, computerColumnPos];
-    }
-
-    return { getArray, setArray, verifyArray, displayArray, playRoundUser, playRoundComputer };
-};
-
-// Module to control flow of the Game
-const controller = () => {
-    // Methods that manage the game itself.
-
-    // Set gameboard on. 
-    const { getArray, setArray, verifyArray, displayArray, playRoundUser, playRoundComputer } = gameboard();
-
-    // Set players on.
-    const user = Player("Carlos");
-    const computer = Player("Computador");
-
-    // Set choices on. 
-    let userChoice = ' ';
-    let computerChoice = '';
-
-    const getUserChoice = () => {
-        return userChoice; 
-    }
-
-    const getComputerChoice = ()  => {
-        return computerChoice; 
-    }
-
-    const setChoice = () => {
-        let choice = ' ';
-        do {
-            choice = (prompt("Would you rather be 'X' or 'O'?")).trim().toUpperCase();
-            if (choice === 'X') {
-                alert("Welcome to Tic-Tac-Toe!"); 
-            } else if (choice === 'O') {
-                alert("Welcome to Tic-Tac-Toe!");
-            } else {
-                alert("Invalid answer. Please, try again.");
-            }
-        } while ((choice !== 'X') && (choice !== 'O'));        
-        userChoice = choice; 
-
-        if (choice === 'X') {
-            computerChoice = 'O';
-        } else if (choice === 'O') {
-            computerChoice = 'X';
-        }
+        // Else 
+        return false;
     };
 
-    const playRound = () => {
-
-        let alphabet = "abcdefghi";
-        
-        // Player Turn
-        let userCoords = playRoundUser(); 
-        setArray(userCoords[0], userCoords[1], getUserChoice());
-        // Print result
-        displayArray();
-
-        // Verify Winner
-        let winner = verifyArray();
-        if (winner !== 'null') {
-            if (winner === getUserChoice()) {
-                alert("User won the game!");
-                user.incrementScore();
-                return true; 
-            }
+    const resetBoard = ((pieces) => {
+        const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
+        for (let i = 0; i < 9; i++) {
+            setArray(i, alphabet[i]);
         }
+        Array.from(pieces).forEach((item) => {
+            item.textContent = '';
+        });
+    });
 
-        // If Draw
-        if (!getArray().some(element => alphabet.includes(element))) {
-            alert("It's a Draw!");
-            return true; 
-        } 
-
-        // Computer Turn
-        let computerCoords = playRoundComputer(); 
-        setArray(computerCoords[0], computerCoords[1], getComputerChoice());
-        // Print result
-        displayArray();
-
-        // Verify Winner
-        winner = verifyArray();
-        if (winner !== 'null') {
-            if (winner === getComputerChoice()) {
-                alert("Computer won the game!");
-                computer.incrementScore();
-                return true; 
-            }
-        }
-        
-        // If Draw
-        if (!getArray().some(element => alphabet.includes(element))) {
-            alert("It's a Draw!");
-            return true; 
-        } else {
-            playRound();
-        }
-    }
- 
-    return { user, computer, getUserChoice, getComputerChoice, setChoice, playRound};
-};
-
-// Game initialization 
-const { setChoice, playRound } = controller();  
-setChoice();
-playRound();
+    return {
+        getRound,
+        setRound,
+        getUser, 
+        getBot,
+        getArray, 
+        setArray,
+        displayWinner, 
+        turnToComputer,
+        displayPiece, 
+        isPositionAvailable, 
+        searchForWinner,
+        resetBoard
+    };
+})(); 

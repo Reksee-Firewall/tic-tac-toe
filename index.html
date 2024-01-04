@@ -3,12 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="images/tic-tac-toe.png" rel="icon">
+    <link href="assets/fonts/Poppins-Regular.ttf" rel="icon">
     <title>Tic Tac Toe</title>
     <link href="style.css" type="text/css" rel="stylesheet">
 </head>
 <body>
-    
+    <div id="wrapper">
+    <header>
+        <h1>Tic Tac Toe</h1>
+        <ul>
+            <li>Follow me on &nbsp;<a href="https://github.com/Reksee-Firewall" target="_blank">>> GitHub &lt;&lt;</a></li>
+            <li><button id="restart">Restart</button></li>
+        </ul>
+    </header>
+    <main>
+        <section id="left-panel">
+            <ul>
+                <li>Round Nº: <span id="round">0</span></li>
+                <li>Player Score: <span id="player">0</span></li>
+                <li>Computer Score: <span id="computer">0</span></li>
+                <!-- <li>Difficulty:</li>
+                <li><button>Easy</button><button>Medium</button><button>Hard</button></li> -->
+                <li>Hero:</li>
+                <li id="heroes"><button id="X">X</button><button id="O">O</button></li>
+            </ul>
+        </section>
+        <section id="right-panel">
+            <div id="gameboard">
+                <div id="item0" class="item firstColumn"></div> 
+                <div id="item3" class="item firstColumn"></div>
+                <div id="item6" class="item firstColumn"></div>
+                <div id="item1" class="item secondColumn"></div>
+                <div id="item4" class="item secondColumn"></div>
+                <div id="item7" class="item secondColumn"></div>
+                <div id="item2" class="item thirdColumn"></div>
+                <div id="item5" class="item thirdColumn"></div>
+                <div id="item8" class="item thirdColumn"></div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        Copyright © 2023 Reksee-Firewall
+    </footer>
+    </div>
 </body>
 <script src="main.js"></script>
 </html>

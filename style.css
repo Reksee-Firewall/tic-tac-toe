@@ -1,0 +1,208 @@
+@font-face {
+    font-family: Poppins;
+    src: url("assets/fonts/Poppins-Regular.ttf");
+}
+
+* {
+    font-family: Poppins;
+    margin: 0px;
+    padding: 0px;
+    list-style-type: none;
+}
+
+:root {
+    --screen-width: 1366px;
+    --screen-height: 600px;
+    --header-height: 100px;
+    --footer-height: 60px;
+}
+
+a {
+    color: blue;
+    text-decoration: none;
+}
+
+button {
+    cursor: pointer;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    background-color: grey;
+}
+
+#wrapper {
+    position: relative;
+    width: var(--screen-width);
+    height: 100vh;
+    background-color: rgb(202, 201, 201);
+}
+
+header {
+    width: 100%;
+    height: var(--header-height);
+    background-color: whitesmoke;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+header ul {
+    display: flex;
+    gap: 30px;
+}
+
+header li {
+    display: flex;
+}
+
+main {
+    width: 100%;
+    height: max(418px, calc(min(800px, 100%) - var(--header-height) - var(--footer-height))); 
+    background-color: white;
+    display: flex;
+    align-items: center;
+}
+
+#left-panel {
+    margin-left: 215px;
+    height: 380px;
+    width: 190px;
+}
+
+#left-panel ul {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#left-panel li button {
+    display: inline-flex;
+    margin-right: 5px;
+    padding: 2px 5px 2px 5px;
+}
+
+#heroes button {
+    width: 82px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+#restart {
+    padding: 2px 5px 2px 5px;
+}
+
+#restart:active {
+    border-color: red;
+    color: red;
+}
+
+#X {
+    border-color: cornflowerblue;
+}
+
+#O {
+    border-color: grey;
+}
+
+#right-panel {
+    margin-left: 210px;
+    height: 400px;
+    width: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#gameboard {
+    height: 380px;
+    width: 380px;
+    display: grid;
+    grid-template-rows: 1fr 1fr 1fr;
+    grid-auto-columns: 1fr 1fr 1fr;
+    grid-auto-flow: column;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    --item-border: 2px solid black;
+    font-size: 4rem;
+}
+
+.item:hover {
+    background-color: whitesmoke;
+}
+
+.firstColumn {
+    border-right: var(--item-border); 
+    border-bottom: var(--item-border);
+}
+
+.firstColumn[id="item6" ] {
+    border-bottom: 0;
+}
+
+.secondColumn {
+    border-bottom: var(--item-border);
+}
+
+.secondColumn[id="item7" ] {
+    border-bottom: 0;
+}
+
+.thirdColumn {
+    border-left: var(--item-border); 
+    border-bottom: var(--item-border);
+}
+
+.thirdColumn[id="item8"] {
+    border-bottom: 0;
+}
+
+footer {
+    width: 100%;
+    height: var(--footer-height);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(228, 224, 224);
+}
+
+@keyframes my-fade {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 100;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes grow {
+    from {
+        transform: scale(0.1);
+    }
+    to {
+        transform: scale(1.0);
+    }
+}
+
+.msg {
+    font-size: 2.5rem;
+    font-weight: 900;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    top: 240px;
+    width: 100%;
+    text-align: center;
+    align-self: center;
+    animation: my-fade 2s both,
+               grow 1s forwards;
+}
